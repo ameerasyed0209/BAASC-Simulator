@@ -120,8 +120,8 @@ with right:
     st.session_state["patch_colour"] = patch_colour
     nominal_exposure = concentration * duration
 
-    st.metric("Nominal concentration-duration product", f"{nominal_exposure:g} ppm·h")
-    st.caption("Nominal ppm·h = concentration × duration; this is not an absorbed dose or validated risk measurement.")
+    st.metric(" concentration-duration product", f"{nominal_exposure:g} ppm·h")
+    st.caption(" ppm·h = concentration × duration; this is not an absorbed dose or validated risk measurement.")
     st.markdown(f"**Illustrative patch colour:** `{patch_colour}`")
     st.markdown(
         f'<div style="height:34px;border-radius:8px;'
