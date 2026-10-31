@@ -118,31 +118,6 @@ with right:
     patch_colour = simulated_colour(concentration, duration)
     previous_patch_colour = st.session_state.get("patch_colour", patch_colour)
     st.session_state["patch_colour"] = patch_colour
-    nominal_exposure = concentration * duration
-
-    st.metric(" concentration-duration product", f"{nominal_exposure:g} ppm·h")
-    st.caption(" ppm·h = concentration × duration; this is not an absorbed dose or validated risk measurement.")
-    st.markdown(f"**Illustrative patch colour:** `{patch_colour}`")
-    st.markdown(
-        f'<div style="height:34px;border-radius:8px;'
-        f'background:{patch_colour};border:1px solid #aab3bf;"></div>',
-        unsafe_allow_html=True,
-    )
-
-    st.write("")
-    st.markdown(
-        f"""
-        <div class="warning">
-        <b>SIMULATED — NOT CALIBRATED.</b>
-        This is an illustrative software model, not a validated H₂S detector
-        or safety device. Actual Cu-PAN patch response requires experimental
-        calibration.<br>
-        Temperature ({temperature} °C) and relative humidity ({humidity}%)
-        are displayed as inputs and do not affect the illustrative colour.
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
 
 with left:
     st.subheader("3D wristband preview")
