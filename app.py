@@ -29,6 +29,20 @@ st.markdown("""
 .stApp [data-testid="stMarkdownContainer"] p,
 .stApp label { color:#40536a; }
 .subtitle { color: #63738a; margin-bottom: 20px; }
+/* Hide the numeric thumb readout while keeping the underlying 0–80 model scale. */
+div[data-testid="stSlider"] [data-testid="stThumbValue"] {
+    display: none !important;
+}
+.exposure-scale {
+    display: flex;
+    justify-content: space-between;
+    margin-top: -0.45rem;
+    margin-bottom: 0.8rem;
+    color: #40536a;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
 .warning {
     background: #fff4df;
     color: #754b13;
@@ -83,9 +97,15 @@ left, right = st.columns([1.2, 0.8], gap="large")
 with right:
     st.subheader("Exposure controls")
 
+    st.markdown("**H₂S exposure level**")
     concentration = st.slider(
-        "H₂S concentration (ppm)",
+        "H₂S exposure level",
         min_value=0, max_value=80, value=20, step=1,
+        label_visibility="collapsed",
+    )
+    st.markdown(
+        '<div class="exposure-scale"><span>LOW</span><span>HIGH</span></div>',
+        unsafe_allow_html=True,
     )
 
     temperature = st.slider(
@@ -106,10 +126,6 @@ with right:
     patch_colour = simulated_colour(concentration, duration)
     previous_patch_colour = st.session_state.get("patch_colour", patch_colour)
     st.session_state["patch_colour"] = patch_colour
-    nominal_exposure = concentration * duration
-
-    st.metric("Nominal concentration-duration product", f"{nominal_exposure:g} ppm·h")
-    st.caption("Nominal ppm·h = concentration × duration; this is not an absorbed dose or validated risk measurement.")
     st.markdown(f"**Illustrative patch colour:** `{patch_colour}`")
     st.markdown(
         f'<div style="height:34px;border-radius:8px;'
