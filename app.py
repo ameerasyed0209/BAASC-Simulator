@@ -30,7 +30,20 @@ st.markdown("""
 .stApp label { color:#40536a; }
 .subtitle { color: #63738a; margin-bottom: 20px; }
 /* Hide the numeric thumb readout while keeping the underlying 0–80 model scale. */
-div[data-testid="stSlider"] [data-testid="stThumbValue"] {
+/* Hide the live numeric value above the H2S slider thumb. */
+div[data-testid="stSlider"] [data-testid="stThumbValue"],
+div[data-testid="stSlider"] [data-testid*="ThumbValue"],
+div[data-testid="stSlider"] [class*="thumbValue"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    color: transparent !important;
+    font-size: 0 !important;
+}
+
+/* Hide Streamlit's numeric minimum/maximum tick labels for this slider only. */
+div[data-testid="stSlider"] [data-testid*="TickBar"],
+div[data-testid="stSlider"] [data-testid*="tick"] {
     display: none !important;
 }
 .exposure-scale {
