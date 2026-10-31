@@ -28,27 +28,18 @@ st.markdown("""
 .stApp [data-testid="stMarkdownContainer"] p,
 .stApp label { color:#40536a; }
 .subtitle { color: #63738a; margin-bottom: 20px; }
-/* H2S slider only: show LOW / HIGH instead of numbers */
-.st-key-h2s_slider [data-testid="stSliderThumbValue"],
-[data-testid="stSlider"]:has([role="slider"][aria-label*="concentration"]) [data-testid="stSliderThumbValue"] {
-    visibility: hidden !important;
-}
-.st-key-h2s_slider [data-testid="stSliderTickBarMin"],
-[data-testid="stSlider"]:has([role="slider"][aria-label*="concentration"]) [data-testid="stSliderTickBarMin"],
-.st-key-h2s_slider [data-testid="stSliderTickBarMax"],
-[data-testid="stSlider"]:has([role="slider"][aria-label*="concentration"]) [data-testid="stSliderTickBarMax"] {
+/* H2S slider only: elements are tagged by the helper script at the end of this file */
+[data-h2s-hide="1"] { visibility: hidden !important; }
+[data-h2s-end="min"], [data-h2s-end="max"] {
     font-size: 0 !important;
+    overflow: visible !important;
 }
-.st-key-h2s_slider [data-testid="stSliderTickBarMin"]::after,
-[data-testid="stSlider"]:has([role="slider"][aria-label*="concentration"]) [data-testid="stSliderTickBarMin"]::after {
-    content: "LOW";
+[data-h2s-end="min"]::after, [data-h2s-end="max"]::after {
     font-size: 0.875rem;
+    white-space: nowrap;
 }
-.st-key-h2s_slider [data-testid="stSliderTickBarMax"]::after,
-[data-testid="stSlider"]:has([role="slider"][aria-label*="concentration"]) [data-testid="stSliderTickBarMax"]::after {
-    content: "HIGH";
-    font-size: 0.875rem;
-}
+[data-h2s-end="min"]::after { content: "LOW"; }
+[data-h2s-end="max"]::after { content: "HIGH"; }
 .warning {
     background: #fff4df;
     color: #754b13;
@@ -798,4 +789,69 @@ st.divider()
 st.caption(
     "BAASC · SIH 2026 · Virtual concept only. "
     "This is not a calibrated chemical sensor or safety device."
+)
+
+# Helper for the H2S slider display only (tags its thumb value and end labels).
+components.html(
+    """
+<script>
+(function () {
+  var doc;
+  try { doc = window.parent.document; } catch (e) { return; }
+  var win = window.parent;
+
+  function findSlider() {
+    var all = doc.querySelectorAll('[data-testid="stSlider"]');
+    for (var i = 0; i < all.length; i++) {
+      var el = all[i];
+      if (el.closest('.st-key-h2s_slider')) return el;
+      var thumb = el.querySelector('[role="slider"]');
+      var label = (thumb && thumb.getAttribute('aria-label')) || '';
+      var lab = el.querySelector('[data-testid="stWidgetLabel"]');
+      var text = label + ' ' + (lab ? lab.textContent : '');
+      if (text.indexOf('concentration') !== -1) return el;
+    }
+    return null;
+  }
+
+  function tag() {
+    var slider = findSlider();
+    if (!slider) return;
+    var nodes = slider.querySelectorAll('*');
+    for (var i = 0; i < nodes.length; i++) {
+      var n = nodes[i];
+      if (n.children.length > 0) continue;
+      var t = (n.textContent || '').trim();
+      if (!t) continue;
+      if (n.closest('[data-testid="stWidgetLabel"]')) continue;
+      var tid = '';
+      var p = n;
+      while (p && p !== slider) {
+        tid += ' ' + (p.getAttribute('data-testid') || '');
+        p = p.parentElement;
+      }
+      if (/ThumbValue/.test(tid) || n.closest('[role="slider"]')) {
+        n.setAttribute('data-h2s-hide', '1');
+      } else if (/TickBarMin/.test(tid) || t === '0') {
+        n.setAttribute('data-h2s-end', 'min');
+      } else if (/TickBarMax/.test(tid) || t === '80') {
+        n.setAttribute('data-h2s-end', 'max');
+      }
+    }
+  }
+
+  if (win.__h2sObserver) { try { win.__h2sObserver.disconnect(); } catch (e) {} }
+  var pending = false;
+  function schedule() {
+    if (pending) return;
+    pending = true;
+    win.requestAnimationFrame(function () { pending = false; tag(); });
+  }
+  win.__h2sObserver = new win.MutationObserver(schedule);
+  win.__h2sObserver.observe(doc.body, { childList: true, subtree: true, characterData: true });
+  tag();
+})();
+</script>
+""",
+    height=0,
 )
