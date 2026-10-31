@@ -1,4 +1,3 @@
-
 import streamlit as st
 import streamlit.components.v1 as components
 import math
@@ -29,32 +28,26 @@ st.markdown("""
 .stApp [data-testid="stMarkdownContainer"] p,
 .stApp label { color:#40536a; }
 .subtitle { color: #63738a; margin-bottom: 20px; }
-/* Hide the numeric thumb readout while keeping the underlying 0–80 model scale. */
-/* Hide the live numeric value above the H2S slider thumb. */
-div[data-testid="stSlider"] [data-testid="stThumbValue"],
-div[data-testid="stSlider"] [data-testid*="ThumbValue"],
-div[data-testid="stSlider"] [class*="thumbValue"] {
-    display: none !important;
+/* H2S slider only: show LOW / HIGH instead of numbers */
+.st-key-h2s_slider [data-testid="stSliderThumbValue"],
+[data-testid="stSlider"]:has([role="slider"][aria-label*="concentration"]) [data-testid="stSliderThumbValue"] {
     visibility: hidden !important;
-    opacity: 0 !important;
-    color: transparent !important;
+}
+.st-key-h2s_slider [data-testid="stSliderTickBarMin"],
+[data-testid="stSlider"]:has([role="slider"][aria-label*="concentration"]) [data-testid="stSliderTickBarMin"],
+.st-key-h2s_slider [data-testid="stSliderTickBarMax"],
+[data-testid="stSlider"]:has([role="slider"][aria-label*="concentration"]) [data-testid="stSliderTickBarMax"] {
     font-size: 0 !important;
 }
-
-/* Hide Streamlit's numeric minimum/maximum tick labels for this slider only. */
-div[data-testid="stSlider"] [data-testid*="TickBar"],
-div[data-testid="stSlider"] [data-testid*="tick"] {
-    display: none !important;
+.st-key-h2s_slider [data-testid="stSliderTickBarMin"]::after,
+[data-testid="stSlider"]:has([role="slider"][aria-label*="concentration"]) [data-testid="stSliderTickBarMin"]::after {
+    content: "LOW";
+    font-size: 0.875rem;
 }
-.exposure-scale {
-    display: flex;
-    justify-content: space-between;
-    margin-top: -0.45rem;
-    margin-bottom: 0.8rem;
-    color: #40536a;
-    font-size: 0.82rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
+.st-key-h2s_slider [data-testid="stSliderTickBarMax"]::after,
+[data-testid="stSlider"]:has([role="slider"][aria-label*="concentration"]) [data-testid="stSliderTickBarMax"]::after {
+    content: "HIGH";
+    font-size: 0.875rem;
 }
 .warning {
     background: #fff4df;
@@ -110,15 +103,10 @@ left, right = st.columns([1.2, 0.8], gap="large")
 with right:
     st.subheader("Exposure controls")
 
-    st.markdown("**H₂S exposure level**")
     concentration = st.slider(
-        "H₂S exposure level",
+        "H₂S concentration (ppm)",
         min_value=0, max_value=80, value=20, step=1,
-        label_visibility="collapsed",
-    )
-    st.markdown(
-        '<div class="exposure-scale"><span>LOW</span><span>HIGH</span></div>',
-        unsafe_allow_html=True,
+        key="h2s_slider",
     )
 
     temperature = st.slider(
@@ -139,6 +127,10 @@ with right:
     patch_colour = simulated_colour(concentration, duration)
     previous_patch_colour = st.session_state.get("patch_colour", patch_colour)
     st.session_state["patch_colour"] = patch_colour
+    nominal_exposure = concentration * duration
+
+    st.metric("Nominal concentration-duration product", f"{nominal_exposure:g} ppm·h")
+    st.caption("Nominal ppm·h = concentration × duration; this is not an absorbed dose or validated risk measurement.")
     st.markdown(f"**Illustrative patch colour:** `{patch_colour}`")
     st.markdown(
         f'<div style="height:34px;border-radius:8px;'
